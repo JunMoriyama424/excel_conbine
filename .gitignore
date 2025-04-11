@@ -1,0 +1,15 @@
+# 仮想環境全体を除外
+venv/
+
+# Pythonキャッシュファイルを除外
+__pycache__/
+*.pyc
+*.pyo
+
+# ビルドフォルダを除外
+build/
+
+# その他の一時ファイルを除外
+*.log
+*.tmp
+.DS_Store
