@@ -1,21 +1,36 @@
 import pandas as pd
+import argparse
 from openpyxl import Workbook
 
-# 2つのExcelファイルを読み込む
-excel1_path = "Excel1.xlsx"
-excel2_path = "Excel2.xlsx"
+def combine_excel_sheets(file_paths, sheet_name, output_path):
+    # 各Excelファイルの指定されたシートを読み込み、結合
+    combined_data = pd.DataFrame()
+    for file_path in file_paths:
+        sheet_data = pd.read_excel(file_path, sheet_name=sheet_name, header=None)
+        combined_data = pd.concat([combined_data, sheet_data], ignore_index=True)
 
-# シート1をDataFrameとして読み込む
-sheet1_excel1 = pd.read_excel(excel1_path, sheet_name="シート1", header=None)
-sheet1_excel2 = pd.read_excel(excel2_path, sheet_name="シート1", header=None)
+    # 結合したデータを新しいExcelファイルに保存
+    with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+        combined_data.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
 
-# シート1のデータを上下に結合（空白行を無視）
-combined_sheet1 = pd.concat([sheet1_excel1, sheet1_excel2], ignore_index=True)
+    print(f"結合したデータを新しいExcelファイルに保存しました: {output_path}")
 
-# 新しいExcelブックを作成
-output_path = "Combined.xlsx"
-with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
-    # 結合したデータを新しいシートに書き込む
-    combined_sheet1.to_excel(writer, sheet_name="シート1", index=False, header=False)
+def main():
+    # コマンドライン引数の設定
+    parser = argparse.ArgumentParser(description="複数のExcelファイルの指定されたシートを結合します。")
+    parser.add_argument(
+        "files", nargs="+", help="結合するExcelファイルのパスを指定してください（複数可）。"
+    )
+    parser.add_argument(
+        "--sheet", required=True, help="結合するシート名を指定してください。"
+    )
+    parser.add_argument(
+        "--output", default="Combined.xlsx", help="出力するExcelファイルのパスを指定してください（デフォルト: Combined.xlsx）。"
+    )
+    args = parser.parse_args()
 
-print(f"2つのExcelファイルのシート1を結合した新しいExcelファイルを作成しました: {output_path}")
+    # 結合処理を実行
+    combine_excel_sheets(args.files, args.sheet, args.output)
+
+if __name__ == "__main__":
+    main()
